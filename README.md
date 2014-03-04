@@ -1,6 +1,8 @@
 DSHW4
 =====
 
+Version: 2014-03-03
+
 Distributed Systems Home Work 4: Dining Philosphers
 
 Team Members: Alejandro Frias and Ravi Kumar
