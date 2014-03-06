@@ -1,0 +1,65 @@
+--------------------------------------------------------------------------------
+                                    States
+--------------------------------------------------------------------------------
+Between philosophers:
+
+JOINING
+  At the start, sends out a Join Request to all its neighbors.
+  If at any point we have a Join Accept for each of our philosophers (so our list of neighbors that haven't accepted the request is empty), then create a dirty fork for each neighbor and start thinking with all those forks in hand (so that we enter with the lowest priority of our neighbors thereby maintaining an acyclic priority graph).
+  Receives:
+    Join Accept - Removes the philosopher from their list of neighbors who haven't accepted the request.
+    Goodbye Message - Removes the leaving philosopher from their list of neighbors and from the list of neighbors that haven't accepted the requests.
+    Store all other requests to be processed later (like when thinking).
+
+THINKING
+  Note: A THINKING philosopher should only have dirty forks, if any, at any time.
+  Receives:
+    Fork Request - Sends the fork to the requester.
+    Join Request - Adds the philosopher to its list of neighbors, then sends it a Join Accept (and a fruit basket).
+    Goodbye Message - Removes the leaving person from their list of neighbors as well as the corresponding fork if it has it.
+    Become Hungry - Switch to the HUNGRY state.
+    Leave - Sends a Goodbye Message to all its neighbors then enters LEAVING state.
+HUNGRY
+EATING
+LEAVING
+GONE
+
+Between philosophers and external controller:
+
+--------------------------------------------------------------------------------
+                          Philosopher's Information
+--------------------------------------------------------------------------------
+Neighbors
+Forks
+Unprocessed Messages
+Neighbors that haven't accepted Join Request (Will only be used in JOINING state)
+
+
+--------------------------------------------------------------------------------
+                                  Messages
+--------------------------------------------------------------------------------
+
+Fork Request:
+  Information: Requester's name
+  Description: The person sending the request is hungry and would like the fork. Eventually the fork will be sent, once the requester has higher priority.
+  HUNGRY philosophers can send a Fork Request only if they don't have the relevant fork already.
+  THINKING and HUNGRY philosophers can process a Fork Request.
+
+Send a Fork:
+  Information: The fork itself
+  Description: Sends a fork to a philosopher with higher priority (it is clean upon arrival), allowing that philosopher to eat if it has all the forks.
+  HUNGRY and THINKING philosophers can send forks to only to philosopher's who have requested it and only if it is dirty.
+  HUNGRY philosophers can receive forks, but only after not having that fork and having sent a request for that fork.
+
+Join Request:
+  Information: The name of the new philosopher
+  Description: When a philosopher is JOINING it asks everyone if it's ok for them to join.
+  JOINING philosophers can send this request.
+  THINKING philosophers can process the joining request.
+
+
+Join Accept:
+  Information: A welcome card to the neighborhood (so nothing except confirmation)
+  Description: A joining philosopher receiving this from each of its neighbors knows it can start thinking. When a philosopher sends this it means it will thus forth consider the new philosopher as one of its neighbors.
+  THINKING philosophers can send these to a joining neighbor in response to a Join Request
+  JOINING philosophers can process these
