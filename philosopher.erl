@@ -129,10 +129,25 @@ hungry(Neighbors, Forks, CleanForkRequests, ECPid, ECRef) ->
   end.
 
 eating(Neighbors, Forks, CleanForkRequests) ->
-  dsutils:log("Not yet implemented.").
+    receive
+    {_, _, stop_eating} ->
+      dsutils:log("Received message from external controllerto stop eating."),
+      DirtyForks = [{dirty, F} || {_, F} <- Forks],
+      thinking(Neighbors, DirtyForks, CleanForkRequests);
 
-leaving(Neighbors, Forks, ECPid, ECRef) ->
-  dsutils:log("Not yet implemented.").
+    {Pid, Ref, leave} ->
+      dsutils:log("Received message to leave the network."),
+      send_goodbye_messages(Neighbors),
+      leaving(Neighbors, Forks, Pid, Ref)
+    end.
+
+leaving(_, _, ECPid, ECRef) ->
+  dsutils:log("Sent goodbyes."),
+  ECPid ! {ECRef, gone},
+  gone().
+
+gone() -> halt().
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                              Helper Functions                                %
