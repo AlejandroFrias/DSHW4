@@ -80,6 +80,7 @@ thinking(Neighbors, Forks, []) ->
     {Pid, Ref, become_hungry} ->
       dsutils:log("Received command to become HUNGRY. Sending fork requests."),
       N = [X || X <- Neighbors, not(lists:member({dirty, X}, Forks))],
+      dsutils:log("Sending Fork Requests to: ~p", [N]),
       send_fork_requests(N),
       hungry(Neighbors, Forks, [], Pid, Ref);
     {Pid, Ref, leave} ->
@@ -145,7 +146,7 @@ hungry(Neighbors, Forks, CleanForkRequests, ECPid, ECRef) ->
 eating(Neighbors, Forks, CleanForkRequests) ->
     receive
     {_, _, stop_eating} ->
-      dsutils:log("Received message from external controllerto stop eating."),
+      dsutils:log("Received message from external controller to stop eating."),
       DirtyForks = [{dirty, F} || {_, F} <- Forks],
       thinking(Neighbors, DirtyForks, CleanForkRequests);
 
