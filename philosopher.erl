@@ -82,10 +82,12 @@ thinking(Neighbors, Forks, []) ->
       N = [X || X <- Neighbors, not(lists:member({dirty, X}, Forks))],
       dsutils:log("Sending Fork Requests to: ~p", [N]),
       send_fork_requests(N),
+      dsutils:log("STATE: THINKING -> HUNGRY"),
       hungry(Neighbors, Forks, [], Pid, Ref);
     {Pid, Ref, leave} ->
       dsutils:log("Received Leave command from external controller."),
       send_goodbye_messages(Neighbors),
+      dsutils:log("STATE: THINKING -> LEAVING"),
       leaving(Neighbors, Forks, Pid, Ref)
   end;
 thinking(Neighbors, Forks, [C | Cs]) ->
@@ -107,6 +109,7 @@ hungry(Neighbors, Forks, CleanForkRequests, ECPid, ECRef) ->
       dsutils:log("I have all the forks. Starting to eat now."),
       ECPid ! {ECRef, eating},
       F = [{dirty, X} || {_, X} <- Forks], % dirty all the forks
+      dsutils:log("STATE: HUNGRY -> EATING"),
       eating(Neighbors, F, CleanForkRequests);
     false ->
       receive
@@ -133,6 +136,7 @@ hungry(Neighbors, Forks, CleanForkRequests, ECPid, ECRef) ->
         {Pid, Ref, leave} ->
           dsutils:log("Received Leave command from external controller."),
           send_goodbye_messages(Neighbors),
+          dsutils:log("STATE: HUNGRY -> LEAVING"),
           leaving(Neighbors, Forks, Pid, Ref)
       end 
   end.
@@ -148,11 +152,13 @@ eating(Neighbors, Forks, CleanForkRequests) ->
     {_, _, stop_eating} ->
       dsutils:log("Received message from external controller to stop eating."),
       DirtyForks = [{dirty, F} || {_, F} <- Forks],
+      dsutils:log("STATE: EATING -> THINKING"),
       thinking(Neighbors, DirtyForks, CleanForkRequests);
 
     {Pid, Ref, leave} ->
       dsutils:log("Received message to leave the network."),
       send_goodbye_messages(Neighbors),
+      dsutils:log("STATE: EATING -> LEAVING"),
       leaving(Neighbors, Forks, Pid, Ref)
     end.
 
@@ -163,6 +169,7 @@ eating(Neighbors, Forks, CleanForkRequests) ->
 leaving(_, _, ECPid, ECRef) ->
   dsutils:log("Sent goodbyes."),
   ECPid ! {ECRef, gone},
+  dsutils:log("STATE: LEAVING -> GONE"),
   gone().
 
 % GONE state
