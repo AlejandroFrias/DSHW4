@@ -70,7 +70,7 @@ thinking(Neighbors, Forks, []) ->
       thinking(N, Forks, []);
     {Name, fork_request} ->
       dsutils:log("Received fork request from ~p.", [Name]),
-      F = send_fork(Name, Forks),
+      F = send_fork(node(), Forks),
       thinking(Neighbors, F, []);
     {Name, goodbye} ->
       dsutils:log("Received Leave command from external controller."),
