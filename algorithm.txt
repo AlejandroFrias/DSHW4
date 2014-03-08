@@ -125,4 +125,16 @@ Controller messages:
 --------------------------------------------------------------------------------
                               Proof of Correctness
 --------------------------------------------------------------------------------
-Our algorithm is based on the hygenic algorithm, which we know to be correct for networks of philosophers. We must simply show that it is remains correct when philosophers join and leave the network. When a philosopher p intends to join the network, it sends a message to each of its intended neighbors. These neighbors only process such messages while they are thinking. When neighbor q gets a join message from p, it adds p to its list of neighbors, and replies back with an acknowledgement. When p has acknowledgements from all of its neighbors, it moves from joining to thinking. Notably, when p becomes thinking, none of its neighbors are currently eating. This is because any neighbors that have received our notifications 
+Our algorithm is based on the hygenic algorithm, which we know to be correct for networks of philosophers. We must simply show that it is remains correct when philosophers join and leave the network. When a philosopher p intends to join the network, it sends a message to each of its intended neighbors. These neighbors only process such messages while they are thinking. When neighbor q gets a join message from p, it adds p to its list of neighbors, and replies back with an acknowledgement. When p has acknowledgements from all of its neighbors, it moves from joining to thinking. Notably, when p becomes thinking, none of its neighbors are currently eating. This is because after a neighbor receives p's notification, it cannot eat until p becomes thinking, at which point it will process fork requests. Therefore, when all of p's neighbors have acknowledged p's join request, all of its neighbors are either thinking or hungry.
+
+When p becomes thinking from joining, p creates a bunch of dirty forks, one for each edge, giving all of its neighbors priority. Since there are no outgoing edges from p, we maintain our acyclic priority graph.
+
+When a node p wants to leave the network, it sends a message to all of its neighbors that it is leaving. When the neighbors receive this message,
+they delete the relevant fork and all knowledge of that neighbor. Since we are only deleting edges, this maintains our acyclic priority graph.
+
+
+
+
+
+
+

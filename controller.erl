@@ -49,7 +49,7 @@ expect_eating(Rs) -> expect_atom(Rs, eating).
 
 expect_gone(Rs) -> expect_atom(Rs, gone).
 
-expect_atom([], _) -> true;
+expect_atom([], Atom) -> dsutils:log("All ~p atoms.", [Atom]), Atom;
 expect_atom([R | Rs], Atom) ->
 	receive
 		{R, Atom} ->
