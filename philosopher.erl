@@ -61,8 +61,8 @@ joining(N) ->
 thinking(Neighbors, Forks, []) ->
   receive
     {Name, join_request} ->
-      dsutils:log("Received Join Request from ~p. Adding them.", [Name]),
       N = [Name | Neighbors],
+      dsutils:log("Received Join Request from ~p. My neighbors are now ~p.", [Name, N]),
       dsutils:log("Sending Join Accept to ~p.", [Name]),
       {philosopher, Name} ! {node(), join_accept},
       thinking(N, Forks, []);
