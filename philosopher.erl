@@ -1,8 +1,11 @@
 %% CSCI182E - Distributed Systems
 %% Harvey Mudd College
 %% The Philosopher Node
-%% @author Alejandro Frias
-%% @doc "philosopher" The Philosopher.
+%% @author Alejandro Frias, Ravi Kumar
+%% @version 2014-03-06
+%% @doc "philosopher" The Philosopher as in Dining Philosophers problem, but 
+%%                    with added capability of adding and removing philosophers 
+%%                    from the system.
 
 -module (philosopher).
 
@@ -12,6 +15,7 @@
 %                            Exported Functions                                %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+% Starts up the philosopher and sets it to JOINING state initially
 main([Name | Neighbors]) ->
   try 
     _ = os:cmd("epmd -daemon"),
