@@ -21,6 +21,8 @@ main([Name | Neighbors]) ->
     _ = os:cmd("epmd -daemon"),
     net_kernel:start([list_to_atom(Name), shortnames]),
     register(philosopher, self()),
+    %Set the cookie to PHILOSOPHER (was causing an error when I tried to connect to my partner's nodes)
+    erlang:set_cookie(node(), "PHILOSOPHER"),
     dsutils:log("My node name is '~s'", [node()]),
     N = [list_to_atom(X) || X <- Neighbors],
     joining(N), % initially joining
