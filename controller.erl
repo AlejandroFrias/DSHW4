@@ -12,7 +12,7 @@ leave_while_hungry_test(NumPhil) ->
   send_become_hungry_commands(tl(Phils), []),
   RefsLeave = send_leave_commands(tl(Phils), []),
   expect_gone(RefsLeave)
-  RefsHungry = send_become_hungry_commands([hd(Phils)]),
+  RefsHungry = send_become_hungry_commands([hd(Phils)], []),
   expect_eating(RefsHungry).
 
 send_become_hungry_commands(Phils, Refs) ->
