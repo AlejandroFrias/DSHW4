@@ -21,6 +21,8 @@ main([Name | Neighbors]) ->
     _ = os:cmd("epmd -daemon"),
     net_kernel:start([list_to_atom(Name), shortnames]),
     register(philosopher, self()),
+    %Set the cookie to PHILOSOPHER (was causing an error when I tried to connect to my partner's nodes)
+    erlang:set_cookie(node(), "PHILOSOPHER"),
     dsutils:log("My node name is '~s'", [node()]),
     N = [list_to_atom(X) || X <- Neighbors],
     joining(N), % initially joining
@@ -202,7 +204,7 @@ send_fork_requests([]) ->
   dsutils:log("All fork requests sent.");
 send_fork_requests([N | Ns]) ->
   dsutils:log("Sending fork request to ~p", [N]),
-  {philosopher, N} ! {self(), node(), fork_request},
+  {philosopher, N} ! {node(), fork_request},
   send_fork_requests(Ns).
 
 % Sends a goodbye message to each neighbor in the list
