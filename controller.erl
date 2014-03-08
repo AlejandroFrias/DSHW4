@@ -3,7 +3,7 @@
 -module(controller).
 
 -export([leave_while_hungry_test/1]).
--define (PHILOSOPHERS, ['a@amazonia', 'b@arden', 'c@ash']).
+-define (PHILOSOPHERS, ['a@ash', 'b@birnam', 'c@clover', 'd@dittany', 'e@elm']).
 -define (SEND_TO (NAME), {philosopher, NAME}).
 
 setup() ->
@@ -12,6 +12,10 @@ setup() ->
   net_kernel:start([list_to_atom("controller" ++ integer_to_list(Micro)), shortnames]),
   erlang:set_cookie(node(), 'philosopher').
 
+% Makes everyone but the first guy become hungry. Then tells everyone but the 
+% first guy to leave. Then tells the last remaining guy to become hungry and
+% we expect he'll eat right away. This tests that people leave and say goodbye
+% properly
 leave_while_hungry_test(NumPhil) ->
   setup(),
   Phils = dsutils:first_n_elements(NumPhil, ?PHILOSOPHERS),
@@ -20,6 +24,8 @@ leave_while_hungry_test(NumPhil) ->
   expect_gone(RefsLeave),
   RefsHungry = send_become_hungry_commands([hd(Phils)], []),
   expect_eating (RefsHungry).
+
+joining_while_eating(NumPhils) ->
 
 send_become_hungry_commands(Phils, Refs) ->
   send(Phils, Refs, 'become_hungry').
