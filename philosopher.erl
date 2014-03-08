@@ -7,9 +7,9 @@
 %%                    with added capability of adding and removing philosophers 
 %%                    from the system.
 
--module (philosopher).
+-module(philosopher).
 
--export ([main/1]).
+-export([main/1]).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                            Exported Functions                                %
@@ -17,15 +17,16 @@
 
 % Starts up the philosopher and sets it to JOINING state initially
 main([Name | Neighbors]) ->
-  try 
+  % try 
     _ = os:cmd("epmd -daemon"),
     net_kernel:start([list_to_atom(Name), shortnames]),
     register(philosopher, self()),
     dsutils:log("My node name is '~s'", [node()]),
-    joining(Neighbors) % initially joining
-  catch
-    _:_ -> dsutils:log("Error parsing command line parameters.")
-  end,
+    N = [list_to_atom(X) || X <- Neighbors],
+    joining(N), % initially joining
+  % catch
+  %   _:_ -> dsutils:log("Error parsing command line parameters.")
+  % end,
   halt().
 
 
@@ -62,6 +63,7 @@ thinking(Neighbors, Forks, []) ->
     {Name, join_request} ->
       dsutils:log("Received Join Request from ~p. Adding them.", [Name]),
       N = [Name | Neighbors],
+      dsutils:log("Sending Join Accept to ~p.", [Name]),
       {philosopher, Name} ! {node(), join_accept},
       thinking(N, Forks, []);
     {Name, fork_request} ->
@@ -176,7 +178,7 @@ send_join_requests([]) ->
   dsutils:log("All Join Requests Sent.");
 send_join_requests([N | Ns]) ->
   dsutils:log("Sending a Join Request to ~p.", [N]),
-  {philosopher, N} ! {self(), node(), join_request},
+  {philosopher, N} ! {node(), join_request},
   send_join_requests(Ns).
 
 % Receives all the Join Accepts, or Goodbye Messages instead
