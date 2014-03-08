@@ -149,10 +149,11 @@ hungry(Neighbors, Forks, CleanForkRequests, ECPid, ECRef) ->
 %   
 eating(Neighbors, Forks, CleanForkRequests) ->
     receive
-    {_, _, stop_eating} ->
+    {Pid, Ref, stop_eating} ->
       dsutils:log("Received message from external controller to stop eating."),
       DirtyForks = [{dirty, F} || {_, F} <- Forks],
       dsutils:log("STATE: EATING -> THINKING"),
+      Pid ! {Ref, thinking},
       thinking(Neighbors, DirtyForks, CleanForkRequests);
 
     {Pid, Ref, leave} ->

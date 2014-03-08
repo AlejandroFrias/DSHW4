@@ -23,9 +23,22 @@ leave_while_hungry_test(NumPhil) ->
   RefsLeave = send_leave_commands(tl(Phils), []),
   expect_gone(RefsLeave),
   RefsHungry = send_become_hungry_commands([hd(Phils)], []),
-  expect_eating (RefsHungry).
+  expect_eating(RefsHungry),
+  RefFinal = send_leave_commands([hd(Phils)], []),
+  expect_gone(RefFinal).
 
-joining_while_eating(NumPhils) ->
+% Makes sure that everyone who is hungry gets to eat eventually
+everyone_eats(NumPhils) ->
+  setup(),
+  Phils = dsutils:first_n_elements(NumPhil, ?PHILOSOPHERS),
+  Eating = send_become_hungry_commands(Phils, []),
+  Thinking = send_stop_eating_commands(Phils, []),
+  expect_eating(Eating),
+  expect_thinking(Thinking),
+  Gone = send_leave_commands(Phils, []),
+  expect_gone(Gone).
+
+
 
 send_become_hungry_commands(Phils, Refs) ->
   send(Phils, Refs, 'become_hungry').
@@ -49,10 +62,14 @@ expect_eating(Rs) -> expect_atom(Rs, eating).
 
 expect_gone(Rs) -> expect_atom(Rs, gone).
 
-expect_atom([], Atom) -> dsutils:log("All ~p atoms.", [Atom]), Atom;
+expect_thinking(Rs) -> expect_atom(Rs, thinking).
+
+expect_atom([], Atom) -> 
+  dsutils:log("All ~p atoms.", [Atom]), Atom;
 expect_atom([R | Rs], Atom) ->
 	receive
 		{R, Atom} ->
 			expect_atom(Rs, Atom)
-	after 10000 -> dsutils:log("Didn't receive ~p message from ref '~p'", [Atom, R])
+	after 10000 -> 
+    dsutils:log("ERROR: Didn't receive ~p message from ref '~p'", [Atom, R])
 	end.
