@@ -1,0 +1,4 @@
+ssh afrias@knuth.cs.hmc.edu cd /home/afrias/courses/DistributedSystems/DSHW4; git pull
+ssh afrias@amazonia.cs.hmc.edu "cd /home/afrias/courses/DistributedSystems/DSHW4; ./make; erl -noshell -run philosopher main a &"
+ssh afrias@arden.cs.hmc.edu "cd /home/afrias/courses/DistributedSystems/DSHW4; ./make; erl -noshell -run philosopher main b a@amazonia &"
+ssh afrias@ash.cs.hmc.edu "cd /home/afrias/courses/DistributedSystems/DSHW4; ./make; erl -noshell -run philosopher main c a@amazonia b@arden &"
