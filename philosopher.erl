@@ -73,7 +73,7 @@ thinking(Neighbors, Forks, []) ->
       F = send_fork(node(), Forks),
       thinking(Neighbors, F, []);
     {Name, goodbye} ->
-      dsutils:log("Received Leave command from external controller."),
+      dsutils:log("Received goodbye notification from ~p.", [p]),
       N = lists:delete(Name, Neighbors),
       F = lists:delete({dirty, Name}, Forks),
       thinking(N, F, []);
@@ -126,7 +126,7 @@ hungry(Neighbors, Forks, CleanForkRequests, ECPid, ECRef) ->
           F = [{clean, Name} | Forks],
           hungry(Neighbors, F, CleanForkRequests, ECPid, ECRef);
         {Name, goodbye} ->
-          dsutils:log("Goodbye ~p.", [Name]),
+          dsutils:log("Received goodbye notification from ~p.", [p]),
           N = lists:delete(Name, Neighbors),
           F = lists:delete({dirty, Name}, Forks),
           hungry(N, F, CleanForkRequests, ECPid, ECRef);
