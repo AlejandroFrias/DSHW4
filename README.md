@@ -8,5 +8,9 @@ We set the cookie to "PHILOSPHER" so that the external controller can be anyone 
 
 How to Set cookie: erlang:set_cookie(node(), 'philosopher')
 
+Philosophers assumed node names for controller.erl:
 
+a@amazonia
+b@arden
+c@ash
 
