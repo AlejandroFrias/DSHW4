@@ -4,10 +4,16 @@
 
 -export([leave_while_hungry_test/1]).
 -define (PHILOSOPHERS, ['a@amazonia', 'b@arden', 'c@ash']).
--define (COOKIE, 'philosopher').
 -define (SEND_TO (NAME), {philosopher, NAME}).
 
+setup() ->
+  _ = os:cmd("epmd -daemon"),
+  {_, _, Micro} = now(),
+  net_kernel:start([list_to_atom("controller" ++ integer_to_list(Micro)), shortnames]),
+  erlang:set_cookie(node(), 'philosopher').
+
 leave_while_hungry_test(NumPhil) ->
+  setup(),
   Phils = dsutils:first_n_elements(NumPhil, ?PHILOSOPHERS),
   send_become_hungry_commands(tl(Phils), []),
   RefsLeave = send_leave_commands(tl(Phils), []),
