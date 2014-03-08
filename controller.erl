@@ -2,7 +2,7 @@
 
 -module(controller).
 
--export([leave_while_hungry_test/1]).
+-export([leave_while_hungry_test/1, everyone_eats/1]).
 -define (PHILOSOPHERS, ['a@ash', 'b@birnam', 'c@clover', 'd@dittany', 'e@elm']).
 -define (SEND_TO (NAME), {philosopher, NAME}).
 
@@ -28,7 +28,7 @@ leave_while_hungry_test(NumPhil) ->
   expect_gone(RefFinal).
 
 % Makes sure that everyone who is hungry gets to eat eventually
-everyone_eats(NumPhils) ->
+everyone_eats(NumPhil) ->
   setup(),
   Phils = dsutils:first_n_elements(NumPhil, ?PHILOSOPHERS),
   Eating = send_become_hungry_commands(Phils, []),
