@@ -1,0 +1,7 @@
+<snippet>
+  <content><![CDATA[
+io:format("${1:~p}~n"${1/([^~]|~~)*(~.)?.*/(?2:, []:)/})
+]]></content>
+  <tabTrigger>io:format</tabTrigger>
+  <scope>source.erlang</scope>
+</snippet>

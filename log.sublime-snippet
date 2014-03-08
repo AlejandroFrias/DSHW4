@@ -1,0 +1,7 @@
+<snippet>
+  <content><![CDATA[
+dsutils:log("${1:~p}"${1/([^~]|~~)*(~.)?.*/(?2:, []:)/})
+]]></content>
+  <tabTrigger>log</tabTrigger>
+  <scope>source.erlang</scope>
+</snippet>
