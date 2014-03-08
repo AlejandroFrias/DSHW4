@@ -204,7 +204,7 @@ send_fork_requests([]) ->
   dsutils:log("All fork requests sent.");
 send_fork_requests([N | Ns]) ->
   dsutils:log("Sending fork request to ~p", [N]),
-  {philosopher, N} ! {self(), node(), fork_request},
+  {philosopher, N} ! {node(), fork_request},
   send_fork_requests(Ns).
 
 % Sends a goodbye message to each neighbor in the list
