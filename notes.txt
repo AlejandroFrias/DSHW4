@@ -1,0 +1,69 @@
+How to join:
+	send messages to all neighbors, which will be processed next time they're thinking
+	They process these messages when they get to thinking, and send a reply
+		they add the new neighbor to their list of neighbors and send a response
+	when all replies have been received the new guy transitions into thinking or whatevs and has a whole bunch of dirty forks
+
+How to leave:
+	send messages to all neighbors being like bye! and all the neighbors respond with ok
+		the neighbors possibly only reply when they're thinking or leaving?
+		a neighbor deletes the relevant fork and all knowledge of you when they get that leaving request
+	when all neighbors have acknowledged we leave
+
+
+Worry about joining/leaving simultaneously bugs!
+
+
+Goodbye Message:
+	Information: Requester's name
+	Description: The philosopher sending the request has been told by the controller to leave, and is notifying its neighbors of this.
+	This can only be sent by THINKING, HUNGRY, or EATING philosophers.
+	This can only be processed by philosophers THINKING, HUNGRY, LEAVING, or JOINING.
+
+Controller messages:
+	Become hungry:
+		A message from a controller to a philosopher to transition from THINKING to HUNGRY.
+		These messages are only processed by a philosopher when it is THINKING, at which point it immediately transitions into HUNGRY.
+	Eating:
+		A message from a philosopher to the controller notifying it that the philosopher has transitioned from HUNGRY to EATING.
+	Stop eating:
+		A message from a controller to a philosopher to transition from EATING to THINKING.
+		These messages are only processed by a philosopher when it is EATING, at which point it immediately transitions into THINKING.
+	Leave:
+		A message from a controller to a philosopher to transition from its current state to LEAVING.
+		These messages can be processed by a philosopher in any state except for JOINING and LEAVING (and, of course, GONE).
+	Gone:
+		A message from a philosopher to the controller notifying it that the philosopher has transitioned from LEAVING to GONE.
+
+States/actions
+
+Hungry:
+	When a philosopher becomes hungry, it has already sent messages to its neighbors requesting any forks it doesn't have.
+	Fork Request:
+		When a HUNGRY philosopher receives a fork request from another philosopher, we have two cases:
+			if the fork is dirty, we send the fork to the requesting philosopher.
+			if the fork is clean, we hold onto the request, and it will be processed when the receiving philosopher is thinking.
+	Fork:
+		When a HUNGRY philosopher receives a fork from another philosopher, it holds onto it. If this is the last fork it needs, it transitions into EATING and sends an Eating message to the controller that told it to become hungry.
+	Goodbye Message:
+		When a HUNGRY philosopher receives a Goodbye Message from another philosopher, we have two cases:
+			If the receiving philosopher has the fork for the edge connecting them, it deletes the fork and no longer needs it to start EATING
+			If it doesn't, then it simply knows that it no longer needs that fork to start EATING, and will no longer wait for it.
+	Leave:
+		When an EATING philosopher receives a Leave message from a controller, it immediately transitions into LEAVING,
+		and sends Goodbye Messages to all its neighbors.
+	All other messages are saved and will be processed later.
+
+Eating:
+	Stop Eating:
+		When an EATING philosopher receives a Stop Eating message from a controller, it immediately transitions to THINKING,
+		and marks all its forks as dirty.
+	Leave:
+		When an EATING philosopher receives a Leave message from a controller, it immediately transitions into LEAVING,
+		and sends Goodbye Messages to all its neighbors.
+	All other messages are saved and will be processed later.
+Leaving:
+	When a philosopher transitions into the leaving state, it has already sent Goodbye Messages to all its
+	A philosopher that is LEAVING does not process any messages it receives.
+Gone:
+	The process is dead and no longer receives any messages.

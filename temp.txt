@@ -1,0 +1,117 @@
+%% CSCI182E - Distributed Systems
+%% Harvey Mudd College
+%% The Philosopher Node
+%% @author Alejandro Frias
+%% @doc "philosopher" The Philosopher.
+
+-module (philosopher).
+
+-export ([main/1]).
+
+main([Name | Neighbors]) ->
+    try 
+    _ = os:cmd("epmd -daemon"),
+    net_kernel:start([list_to_atom(Name), shortnames]),
+    register(philosopher, self()),
+    dsutils:timestamp("My node name is '~s'", [node()]),
+    Forks = [{dirty, N} || N <- Neighbors],
+    joining(Neighbors, Forks)
+  catch
+    _:_ -> dsutils:timestamp("Error parsing command line parameters.")
+  end,
+  halt().
+
+joining(Neighbors, Forks) ->
+  ActualNeighbors = connect_to_neighbors(Neighbors),
+  thinking(Neighbors, Forks, []).
+
+thinking(Neighbors, Forks, Requests) -> 
+  % handle_messages:
+  %      request for fork
+  %      become eating
+  %      new neighbor joining
+  %      current neighbor leaving
+  %      you are leaving
+  eating(Neighbors, Forks, []).
+
+eating(Neighbors, Forks, Requests) ->
+  receive
+    {Pid, Ref, stop_eating} ->
+      dsutils:log("Received message to stop eating."),
+      DirtyForks = [{dirty, F} || {_, F} <- Forks],
+      thinking(Neighbors, DirtyForks);
+
+    {Pid, Ref, leave} ->
+      dsutils:log("Received message to leave the network."),
+      leaving(Neighbors, Pid, Ref)
+  end.
+  % dirty all the forks
+  % handle_messages:
+  %      request for fork
+  %      become eating
+  %      new neighbor joining
+  %      current neighbor leaving
+  %      you are leaving
+
+leaving(Neighbors, Pid, Ref) ->
+  send_goodbyes(Neighbors),
+  dsutils:log("Sent goodbyes."),
+  gone().
+
+
+
+
+
+
+
+DSHW4
+=====
+
+Version: 2014-03-03
+
+Distributed Systems Home Work 4: Dining Philosphers
+
+Team Members: Alejandro Frias and Ravi Kumar
+
+Git Instructions:
+  1. 'git clone https://github.com/AlejandroFrias/DSHW4.git' in the directory you want
+  2. cd DSHW4
+  3. work like normal
+
+git status
+git add .
+git status
+git commit -m "<Your Commit Message Here>"
+
+Ready to push changes so your partner can see them?
+
+git push origin master
+
+Didn't work?
+Check 'git status' to see if you missed anything.
+It may also have asked you to pull my latest changes first
+
+Ready to pull my changes?
+
+'git pull' or 'git pull origin master'
+
+Now you can push.
+
+Want to work on your own branch?
+
+'git branch' - lists all available branches (use 'git pull' to pull any new branches since last pull)
+
+'git branch <NameOfYourBranch>' - creates branch with given name (a copy of the branch you are currently in)
+
+'git checkout <NameOfYourBranch>' - switches to that branch
+
+Or, in one short command, 'git checkout -b <NameOfYourBranch' to create and switch to the new branch
+
+Want to merge the branch into master?
+
+1st, in your branch, 'git pull origin master', to update to the master.
+2nd, switch to master ('git checkout master')
+3rd, merge in the changes ('git merge <NameOfYourBranch')
+4th (optional), delete your branch, 'git branch -d <NameOfYourBranch>'
+
+
