@@ -70,7 +70,7 @@ thinking(Neighbors, Forks, []) ->
       thinking(N, Forks, []);
     {Name, fork_request} ->
       dsutils:log("Received fork request from ~p.", [Name]),
-      F = send_fork(node(), Forks),
+      F = send_fork(Name, Forks),
       thinking(Neighbors, F, []);
     {Name, goodbye} ->
       dsutils:log("Received goodbye notification from ~p.", [p]),
@@ -225,5 +225,5 @@ have_all_forks(N, F) ->
 % Returns a list of Forks with the sent fork removed.
 send_fork(Name, Forks) ->
   dsutils:log("Sending a fork to ~p.", [Name]),
-  {philosopher, Name} ! {Name, fork},
+  {philosopher, Name} ! {node(), fork},
   lists:delete({dirty, Name}, Forks).
