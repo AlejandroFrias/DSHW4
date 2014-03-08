@@ -15,3 +15,11 @@ We also have multiple files to compile:
 
 To compile all three, run the "make" script with ./make
 
+
+Philosophers assumed node names for controller.erl:
+
+a@amazonia
+b@arden
+c@ash
+
+

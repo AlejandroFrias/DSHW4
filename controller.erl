@@ -11,7 +11,7 @@ leave_while_hungry_test(NumPhil) ->
   Phils = dsutils:first_n_elements(NumPhil, ?PHILOSOPHERS),
   send_become_hungry_commands(tl(Phils), []),
   RefsLeave = send_leave_commands(tl(Phils), []),
-  expect_gone(RefsLeave)
+  expect_gone(RefsLeave),
   RefsHungry = send_become_hungry_commands([hd(Phils)]),
   expect_eating(RefsHungry).
 
@@ -33,14 +33,14 @@ send([P | Ps], R, C) ->
   send(Ps, [Ref | R], C).
 
 
-expect_eat(Rs) -> expect_atom(Rs, eating).
+expect_eating(Rs) -> expect_atom(Rs, eating).
 
 expect_gone(Rs) -> expect_atom(Rs, gone).
 
-expect_gone([], _) -> true;
-expect_atom([R | Rs], Atom) -> true;
+expect_atom([], _) -> true;
+expect_atom([R | Rs], Atom) ->
 	receive
 		{R, Atom} ->
-			expect_atom(Rs, Atom);
+			expect_atom(Rs, Atom)
 	after 10000 -> dsutils:log("Didn't receive ~p message from ref '~p'", [Atom, R])
 	end.
