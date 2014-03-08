@@ -122,3 +122,7 @@ Controller messages:
     A message from a philosopher to the controller notifying it that the philosopher has transitioned from LEAVING to GONE.
 
 
+--------------------------------------------------------------------------------
+                              Proof of Correctness
+--------------------------------------------------------------------------------
+Our algorithm is based on the hygenic algorithm, which we know to be correct for networks of philosophers. We must simply show that it is remains correct when philosophers join and leave the network. When a philosopher p intends to join the network, it sends a message to each of its intended neighbors. These neighbors only process such messages while they are thinking. When neighbor q gets a join message from p, it adds p to its list of neighbors, and replies back with an acknowledgement. When p has acknowledgements from all of its neighbors, it moves from joining to thinking. Notably, when p becomes thinking, none of its neighbors are currently eating. This is because any neighbors that have received our notifications 
