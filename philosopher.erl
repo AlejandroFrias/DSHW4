@@ -128,6 +128,12 @@ hungry(Neighbors, Forks, CleanForkRequests, ECPid, ECRef) ->
       end 
   end.
 
+% EATING state
+% Receives:
+%   Stop Eating - Message from the controller to stop eating. Immediately dirties
+%     all forks and goes to thinking, which will send out forks
+%   Leave Command - Say goodbye to everyone and start LEAVING state
+%   
 eating(Neighbors, Forks, CleanForkRequests) ->
     receive
     {_, _, stop_eating} ->
@@ -141,12 +147,20 @@ eating(Neighbors, Forks, CleanForkRequests) ->
       leaving(Neighbors, Forks, Pid, Ref)
     end.
 
+% LEAVING state
+% Receives no possible messages
+% Sends a message to the controller that we're gone
+
 leaving(_, _, ECPid, ECRef) ->
   dsutils:log("Sent goodbyes."),
   ECPid ! {ECRef, gone},
   gone().
 
-gone() -> halt().
+% GONE state
+%   Receives no messages!
+gone() -> 
+  dsutils:log("Quitting..."),
+  halt().
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
