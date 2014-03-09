@@ -131,7 +131,9 @@ hungry(Neighbors, Forks, CleanForkRequests, ECPid, ECRef) ->
         {Name, goodbye} ->
           dsutils:log("Received goodbye notification from ~p.", [p]),
           N = lists:delete(Name, Neighbors),
+          dsutils:log("Neighbors left: ~p.", [N]),
           F = lists:delete({clean, Name}, lists:delete({dirty, Name}, Forks)), % deletes the clean or dirty fork
+          dsutils:log("Forks left: ~p.", [F]),
           hungry(N, F, CleanForkRequests, ECPid, ECRef);
         {Pid, Ref, leave} ->
           dsutils:log("Received Leave command from external controller."),
