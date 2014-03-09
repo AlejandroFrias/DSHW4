@@ -7,7 +7,7 @@
 -define (SEND_TO (NAME), {philosopher, NAME}).
 
 get_phils(NumPhils) ->
-  dsutils:first_n_elements(NumPhil, ?PHILOSOPHERS).
+  dsutils:first_n_elements(NumPhils, ?PHILOSOPHERS).
 
 setup() ->
   _ = os:cmd("epmd -daemon"),
