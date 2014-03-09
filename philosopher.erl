@@ -25,7 +25,7 @@ main([Name | Neighbors]) ->
     erlang:set_cookie(node(), 'philosopher'),
     dsutils:log("My node name is '~s'", [node()]),
     N = [list_to_atom(X) || X <- Neighbors],
-    joining(N), % initially joining
+    joining(N) % initially joining
   catch
     _:_ -> dsutils:log("Error parsing command line parameters.")
   end,
