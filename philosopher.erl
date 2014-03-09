@@ -73,7 +73,7 @@ thinking(Neighbors, Forks, []) ->
       F = send_fork(Name, Forks),
       thinking(Neighbors, F, []);
     {Name, goodbye} ->
-      dsutils:log("Received goodbye notification from ~p.", [p]),
+      dsutils:log("Received goodbye notification from ~p.", [Name]),
       N = lists:delete(Name, Neighbors),
       F = lists:delete({dirty, Name}, Forks),
       thinking(N, F, []);
