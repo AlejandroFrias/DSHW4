@@ -2,7 +2,7 @@
 
 -module(controller).
 
--export([leave_while_hungry_test/1, everyone_eats/1, setup/0]).
+-compile(export_all).
 -define (PHILOSOPHERS, ['a@ash', 'b@birnam', 'c@clover', 'd@dittany', 'e@elm']).
 -define (SEND_TO (NAME), {philosopher, NAME}).
 

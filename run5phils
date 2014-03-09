@@ -29,6 +29,26 @@ tell application "Terminal"
         key code 36 # press enter
         keystroke "erl -noshell -run philosopher main c a@ash b@birnam"
         key code 36 # press enter
+
+        keystroke "t" using command down # new tab
+        keystroke "ssh afrias@dittany.cs.hmc.edu"
+        key code 36 # press enter
+        keystroke "cd /home/afrias/courses/DistributedSystems/DSHW4"
+        key code 36 # press enter
+        keystroke "sleep 6" # allow time for a@ash, b@birnam, and c@clover
+        key code 36 # press enter
+        keystroke "erl -noshell -run philosopher main d a@ash b@birnam c@clover"
+        key code 36 # press enter
+
+        keystroke "t" using command down # new tab
+        keystroke "ssh afrias@elm.cs.hmc.edu"
+        key code 36 # press enter
+        keystroke "cd /home/afrias/courses/DistributedSystems/DSHW4"
+        key code 36 # press enter
+        keystroke "sleep 8" # allow time for a@ash, b@birnam, and c@clover
+        key code 36 # press enter
+        keystroke "erl -noshell -run philosopher main e a@ash b@birnam c@clover d@dittany"
+        key code 36 # press enter
     end tell
 end tell
 EOF
