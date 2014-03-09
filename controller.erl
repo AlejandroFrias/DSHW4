@@ -53,7 +53,7 @@ send_stop_eating_commands(Phils, Refs) ->
   send(Phils, Refs, 'stop_eating').
 
 send([], R, C) ->
-  dsutils:log("All ~p commands.", [C]), R;
+  dsutils:log("All ~p commands sent.", [C]), R;
 send([P | Ps], R, C) ->
   dsutils:log("Sending ~p to ~p", [C, P]),
   Ref = make_ref(),
@@ -68,10 +68,11 @@ expect_gone(Rs) -> expect_atom(Rs, gone).
 expect_thinking(Rs) -> expect_atom(Rs, thinking).
 
 expect_atom([], Atom) -> 
-  dsutils:log("All ~p atoms.", [Atom]), Atom;
+  dsutils:log("All ~p messages received.", [Atom]), Atom;
 expect_atom([R | Rs], Atom) ->
 	receive
 		{R, Atom} ->
+      dsutils:log("Received ~p message from Ref ~p.", [Atom, R]),
 			expect_atom(Rs, Atom)
 	after 10000 -> 
     dsutils:log("ERROR: Didn't receive ~p message from ref '~p'", [Atom, R])
