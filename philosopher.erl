@@ -2,7 +2,7 @@
 %% Harvey Mudd College
 %% The Philosopher Node
 %% @author Alejandro Frias, Ravi Kumar
-%% @version 2014-03-06
+%% @version 2014-03-07
 %% @doc "philosopher" The Philosopher as in Dining Philosophers problem, but 
 %%                    with added capability of adding and removing philosophers 
 %%                    from the system.
