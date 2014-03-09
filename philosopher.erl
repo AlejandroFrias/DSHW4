@@ -17,7 +17,7 @@
 
 % Starts up the philosopher and sets it to JOINING state initially
 main([Name | Neighbors]) ->
-  % try 
+  try 
     _ = os:cmd("epmd -daemon"),
     net_kernel:start([list_to_atom(Name), shortnames]),
     register(philosopher, self()),
@@ -26,9 +26,9 @@ main([Name | Neighbors]) ->
     dsutils:log("My node name is '~s'", [node()]),
     N = [list_to_atom(X) || X <- Neighbors],
     joining(N), % initially joining
-  % catch
-  %   _:_ -> dsutils:log("Error parsing command line parameters.")
-  % end,
+  catch
+    _:_ -> dsutils:log("Error parsing command line parameters.")
+  end,
   halt().
 
 
@@ -204,7 +204,7 @@ confirm_join(Neighbors, Waiting) ->
       W = lists:delete(Name, Waiting),
       confirm_join(Neighbors, W);
     {Name, goodbye} ->
-      dsutils:log("Received a Goodbye Message from ~p.", []),
+      dsutils:log("Received a Goodbye Message from ~p.", [Name]),
       W = lists:delete(Name, Waiting),
       N = lists:delete(Name, Neighbors),
       confirm_join(N, W)

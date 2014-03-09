@@ -53,7 +53,7 @@ send_stop_eating_commands(Phils, Refs) ->
   send(Phils, Refs, 'stop_eating').
 
 send([], R, C) ->
-  dsutils:log("All ~p commands sent.", [C]), R;
+  dsutils:log("All ~p commands sent.", [C]), lists:reverse(R);
 send([P | Ps], R, C) ->
   dsutils:log("Sending ~p to ~p", [C, P]),
   Ref = make_ref(),
