@@ -6,6 +6,9 @@
 -define (PHILOSOPHERS, ['a@ash', 'b@birnam', 'c@clover', 'd@dittany', 'e@elm']).
 -define (SEND_TO (NAME), {philosopher, NAME}).
 
+get_phils(NumPhils) ->
+  dsutils:first_n_elements(NumPhil, ?PHILOSOPHERS).
+
 setup() ->
   _ = os:cmd("epmd -daemon"),
   {_, _, Micro} = now(),
@@ -18,7 +21,7 @@ setup() ->
 % properly
 leave_while_hungry_test(NumPhil) ->
   setup(),
-  Phils = dsutils:first_n_elements(NumPhil, ?PHILOSOPHERS),
+  Phils = get_phils(NumPhil),
   send_become_hungry_commands(tl(Phils), []),
   RefsLeave = send_leave_commands(tl(Phils), []),
   expect_gone(RefsLeave),
@@ -30,7 +33,7 @@ leave_while_hungry_test(NumPhil) ->
 % Makes sure that everyone who is hungry gets to eat eventually
 everyone_eats(NumPhil) ->
   setup(),
-  Phils = dsutils:first_n_elements(NumPhil, ?PHILOSOPHERS),
+  Phils = get_phils(NumPhil),
   Eating = send_become_hungry_commands(Phils, []),
   Thinking = send_stop_eating_commands(Phils, []),
   expect_eating(Eating),
