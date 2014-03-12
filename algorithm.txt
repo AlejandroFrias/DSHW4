@@ -1,61 +1,94 @@
+Authors: Alejandro Frias, Ravi Kumar
+Last Date Modified: 20014-03-11
+
 --------------------------------------------------------------------------------
                                     States
 --------------------------------------------------------------------------------
-Between philosophers:
 
 JOINING
-  At the start, sends out a Join Request to all its neighbors.
-  If at any point we have a Join Accept for each of our philosophers (so our list of neighbors that haven't accepted the request is empty), then create a dirty fork for each neighbor and start thinking with all those forks in hand (so that we enter with the lowest priority of our neighbors thereby maintaining an acyclic priority graph).
+  It is assumed Join Requests have been sent to all its neighbors before entering 
+  this state.
+  If at any point we have a Join Accept for each of our philosophers (so our 
+  list of neighbors that haven't accepted the request is empty), then create a 
+  dirty fork for each neighbor and start thinking with all those forks in hand 
+  (so that we enter with the lowest priority of our neighbors thereby 
+  maintaining an acyclic priority graph).
   Receives:
-    Join Accept - Removes the philosopher from their list of neighbors who haven't accepted the request.
-    Goodbye Message - Removes the leaving philosopher from their list of neighbors and from the list of neighbors that haven't accepted the requests.
-    Store all other requests to be processed later (like when thinking).
+    Join Accept:
+      Removes the philosopher from their list of neighbors who haven't 
+      accepted the request.
+    Goodbye Message:
+      Removes the leaving philosopher from their list of 
+      neighbors and from the list of neighbors that haven't 
+      accepted the requests.
+    
+  Stores all other requests to be processed later (like when thinking).
 
 THINKING
   Note: A THINKING philosopher should only have dirty forks, if any, at any time.
+  It either enters THINKING state from JOINING state with a bunch of dirty forks,
+  or from EATING with a bunch of dirty forks.
   Receives:
-    Fork Request - Sends the fork to the requester.
-    Join Request - Adds the philosopher to its list of neighbors, then sends it a Join Accept (and a fruit basket).
-    Goodbye Message - Removes the leaving person from their list of neighbors as well as the corresponding fork if it has it.
-    Become Hungry - Switch to the HUNGRY state.
-    Leave - Sends a Goodbye Message to all its neighbors then enters LEAVING state.
+    Fork Request:
+      Sends the fork to the requester.
+    Join Request:
+      Adds the philosopher to its list of neighbors, then sends it a 
+      Join Accept (and a fruit basket).
+    Goodbye Message:
+      Removes the leaving person from its list of neighbors as well as the 
+      corresponding fork if it has it.
+    Become Hungry:
+      Send fork requests for any forks it doesn't have already, then switches 
+      to the HUNGRY state.
+    Leave:
+      Sends a Goodbye Message to all its neighbors then enters LEAVING state.
+
 HUNGRY
-  When a philosopher becomes hungry, it has already sent messages to its neighbors requesting any forks it doesn't have.
+  When a philosopher becomes hungry, it has already sent messages to its 
+  neighbors requesting any forks it doesn't have.
+  If at any point the HUNGRY philosopher has a fork for each of its neighbors, it 
+  transitions into EATING and sends an Eating message to the controller that 
+  told it to become hungry.
   Receives:
     Fork Request:
-      When a HUNGRY philosopher receives a fork request from another philosopher, we have two cases:
-        if the fork is dirty, we send the fork to the requesting philosopher.
-        if the fork is clean, we hold onto the request, and it will be processed when the receiving philosopher is thinking.
+      if the fork is dirty:
+        we send the fork to the requesting philosopher, 
+        for it has higher priority, followed immediately by a Fork Request for 
+        that very fork (so that we are assured to get the fork back when our 
+        Neighbor has finished eating.
+      if the fork is clean:
+        the philosopher holds onto the request, having higher priority, and
+        will process the request when it becomes THINKING.
     Fork:
-      When a HUNGRY philosopher receives a fork from another philosopher, it holds onto it. If this is the last fork it needs, it transitions into EATING and sends an Eating message to the controller that told it to become hungry.
+      Adds the fork, initially clean, to its list of forks.
     Goodbye Message:
-      When a HUNGRY philosopher receives a Goodbye Message from another philosopher, we have two cases:
-        If the receiving philosopher has the fork for the edge connecting them, it deletes the fork and no longer needs it to start EATING
-        If it doesn't, then it simply knows that it no longer needs that fork to start EATING, and will no longer wait for it.
+      Removes the leaving philosopher from its list of neighbors and from the 
+      list of neighbors that haven't accepted the requests. We don't have to 
+      worry about any forks coming from that philosopher later because of first 
+      in first out message passing and the fact that a philosopher immediately 
+      enters LEAVING and then GONE after sending an GoodBye Message. If we 
+      didn't have this, we would simply have to check that upon receiving a 
+      fork that it matches one of our neighbors.
     Leave:
-      When an EATING philosopher receives a Leave message from a controller, it immediately transitions into LEAVING,
-      and sends Goodbye Messages to all its neighbors.
+      Sends a Goodbye Message to all its neighbors then enters LEAVING state.
+
   All other messages are saved and will be processed later.
+
 EATING
-  When a philosopher becomes hungry, it has already sent messages to its neighbors requesting any forks it doesn't have.
   Receives:
-    Fork Request:
-      When a HUNGRY philosopher receives a fork request from another philosopher, we have two cases:
-        if the fork is dirty, we send the fork to the requesting philosopher.
-        if the fork is clean, we hold onto the request, and it will be processed when the receiving philosopher is thinking.
-    Fork:
-      When a HUNGRY philosopher receives a fork from another philosopher, it holds onto it. If this is the last fork it needs, it transitions into EATING and sends an Eating message to the controller that told it to become hungry.
-    Goodbye Message:
-      When a HUNGRY philosopher receives a Goodbye Message from another philosopher, we have two cases:
-        If the receiving philosopher has the fork for the edge connecting them, it deletes the fork and no longer needs it to start EATING
-        If it doesn't, then it simply knows that it no longer needs that fork to start EATING, and will no longer wait for it.
     Leave:
-      When an EATING philosopher receives a Leave message from a controller, it immediately transitions into LEAVING,
-      and sends Goodbye Messages to all its neighbors.
+      Sends a Goodbye Message to all its neighbors then enters LEAVING state.
+    Stop Eating:
+      Transitions to THINKING state.
+
   All other messages are saved and will be processed later.
+
 LEAVING
-  When a philosopher transitions into the leaving state, it has already sent Goodbye Messages to all its
+  When a philosopher transitions into the leaving state, it has already sent 
+  Goodbye Messages to all its Neighbors. There being nothing else to do, we 
+  transition to GONE immediately.
   A philosopher that is LEAVING does not process any messages it receives.
+
 GONE
   The process is dead and no longer receives any messages.
 
@@ -64,9 +97,10 @@ Between philosophers and external controller:
 --------------------------------------------------------------------------------
                           Philosopher's Information
 --------------------------------------------------------------------------------
-Neighbors
-Forks
-Unprocessed Messages
+List of Neighbors
+List of Forks, clean and dirty, that is has
+Unprocessed Fork Requests
+All other Unprocessed messages
 Neighbors that haven't accepted Join Request (Will only be used in JOINING state)
 
 
@@ -78,17 +112,17 @@ Fork Request:
   Information: Requester's name
   Description: The person sending the request is hungry and would like the fork.
                Eventually the fork will be sent, once the requester has higher
-               priority.
+               priority (once the fork is dirty).
   Send States: HUNGRY philosophers can send a Fork Request only if they don't
                       have the relevant fork already.
   Receive States: THINKING and HUNGRY philosophers can process a Fork Request.
 
 Send a Fork:
-  Information: The fork itself
+  Information: The fork itself, the Sender's name (to tag the fork with)
   Description: Sends a fork to a philosopher with higher priority (it is clean
                upon arrival), allowing that philosopher to eat if it has all
                the forks.
-  Send States: HUNGRY and THINKING philosophers can send forks to only to
+  Send States: HUNGRY and THINKING philosophers can only send forks to
                philosopher's who have requested it and only if it is dirty.
   Receive States: HUNGRY philosophers can receive forks, but only after not
                   having that fork and having sent a request for that fork.
@@ -98,8 +132,11 @@ Join Request:
   Description: When a philosopher is JOINING it asks everyone if it's ok for
                them to join.
   Send States: JOINING philosophers can send this request.
-  Receive States: THINKING philosophers can process the joining request.
-
+  Receive States: THINKING philosophers can process the joining request. In this 
+                  way, we can make sure no neighbors are EATING when the JOINING 
+                  becomes THINKING. We want this since a new philosopher will 
+                  have all its forks, so we wouldn't want it to eat while one of 
+                  its neighbors is EATING.
 
 Join Accept:
   Information: A welcome card to the neighborhood (so nothing except confirmation)
@@ -107,7 +144,9 @@ Join Accept:
                knows it can start thinking. When a philosopher sends this it
                means it will thus forth consider the new philosopher as one of
                its neighbors.
-  Send States: THINKING philosophers can send these to a joining neighbor in response to a Join Request
+  Send States: THINKING philosophers can send these to a joining neighbor in 
+               response to a Join Request and after adding the new philosopher to
+               its list of neighbors.
   Receive States: JOINING philosophers can process these
 
 Goodbye Message:
@@ -116,23 +155,29 @@ Goodbye Message:
                controller to leave, and is notifying its neighbors of this.
   Send States: This can only be sent by THINKING, HUNGRY, or EATING philosophers.
   Receive States: This can only be processed by philosophers THINKING, HUNGRY,
-                  LEAVING, or JOINING. So not eating.
-
+                  or JOINING. So not eating, essentially. We wanted eating 
+                  philosophers to listen for as few messages as possible.
 
 Controller messages:
   Become hungry:
     A message from a controller to a philosopher to transition from THINKING to HUNGRY.
-    These messages are only processed by a philosopher when it is THINKING, at which point it immediately transitions into HUNGRY.
+    These messages are only processed by a philosopher when it is THINKING, 
+    at which point it immediately transitions into HUNGRY.
   Eating:
-    A message from a philosopher to the controller notifying it that the philosopher has transitioned from HUNGRY to EATING.
+    A message from a philosopher to the controller notifying it that the 
+    philosopher has transitioned from HUNGRY to EATING.
   Stop eating:
     A message from a controller to a philosopher to transition from EATING to THINKING.
-    These messages are only processed by a philosopher when it is EATING, at which point it immediately transitions into THINKING.
+    These messages are only processed by a philosopher when it is EATING, at 
+    which point it immediately transitions into THINKING.
   Leave:
-    A message from a controller to a philosopher to transition from its current state to LEAVING.
-    These messages can be processed by a philosopher in any state except for JOINING and LEAVING (and, of course, GONE).
+    A message from a controller to a philosopher to transition from its current 
+    state to LEAVING.
+    These messages can be processed by a philosopher in any state except for 
+    JOINING and LEAVING (and, of course, GONE).
   Gone:
-    A message from a philosopher to the controller notifying it that the philosopher has transitioned from LEAVING to GONE.
+    A message from a philosopher to the controller notifying it that the 
+    philosopher has transitioned from LEAVING to GONE.
 
 
 --------------------------------------------------------------------------------
@@ -141,33 +186,26 @@ Controller messages:
 Our algorithm is based on the hygienic algorithm, which we know to 
 be correct for networks of philosophers. We must simply show that it 
 is remains correct when philosophers join and leave the network. 
-When a philosopher p intends to join the network, it sends a message 
+When a philosopher P intends to join the network, it sends a Join Request 
 to each of its intended neighbors. These neighbors only process such 
-messages while they are thinking. When neighbor q gets a join 
-message from p, it adds p to its list of neighbors, and replies back 
-with an acknowledgment. When p has acknowledgments from all of its 
-neighbors, it moves from joining to thinking. Notably, when p 
+messages while they are thinking. When neighbor Q gets a Join Request 
+message from P, it adds P to its list of neighbors, and replies back 
+with an acknowledgment. When P has acknowledgments from all of its 
+neighbors, it moves from joining to thinking. Notably, when P 
 becomes thinking, none of its neighbors are currently eating. This 
-is because after a neighbor receives p's notification, it cannot eat 
-until p becomes thinking, at which point it will process fork 
-requests. Therefore, when all of p's neighbors have acknowledged p's 
+is because after a neighbor receives P's notification, it cannot eat 
+until P becomes thinking, at which point it will process fork 
+requests. Therefore, when all of P's neighbors have acknowledged P's 
 join request, all of its neighbors are either thinking or 
 hungry.
 
-When p becomes thinking from joining, p creates a bunch of dirty 
+When P becomes thinking from joining, P creates a bunch of dirty 
 forks, one for each edge, giving all of its neighbors priority. 
-Since there are no outgoing edges from p, we maintain our acyclic 
-priority graph.
+Since there are no outgoing edges from P, we maintain our acyclic 
+Priority graPh.
 
-When a node p wants to leave the network, it sends a message to all 
+When a node P wants to leave the network, it sends a message to all 
 of its neighbors that it is leaving. When the neighbors receive this 
 message, they delete the relevant fork and all knowledge of that 
 neighbor. Since we are only deleting edges, this maintains our 
 acyclic priority graph.
-
-
-
-
-
-
-

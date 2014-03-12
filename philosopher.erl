@@ -52,9 +52,11 @@ joining(N) ->
 
 
 % THINKING state
-%   First will process any unprocessed fork request requests that were stored when we had priority
+%   First will process any unprocessed fork request requests that were stored 
+%   when we had priority
 % Receives:
-%   Join Request - Responds with a Join Accept after adding the new neighbor to the list of neighbors
+%   Join Request - Responds with a Join Accept after adding the new neighbor to 
+%                  the list of neighbors
 %   Fork Request - Sends the fork and removes it from the list of forks
 %   Goodbye Message - Removes the philosopher and the corresponding fork
 %   Become Hungry Command - Sends fork requests for missing forks and becomes HUNGRY
@@ -62,16 +64,16 @@ joining(N) ->
 %   
 thinking(Neighbors, Forks, []) ->
   receive
+    {Name, fork_request} ->
+      dsutils:log("Received fork request from ~p.", [Name]),
+      F = send_fork(Name, Forks),
+      thinking(Neighbors, F, []);
     {Name, join_request} ->
       N = [Name | Neighbors],
       dsutils:log("Received Join Request from ~p. My neighbors are now ~p.", [Name, N]),
       dsutils:log("Sending Join Accept to ~p.", [Name]),
       {philosopher, Name} ! {node(), join_accept},
       thinking(N, Forks, []);
-    {Name, fork_request} ->
-      dsutils:log("Received fork request from ~p.", [Name]),
-      F = send_fork(Name, Forks),
-      thinking(Neighbors, F, []);
     {Name, goodbye} ->
       dsutils:log("Received goodbye notification from ~p.", [Name]),
       N = lists:delete(Name, Neighbors),
@@ -90,6 +92,7 @@ thinking(Neighbors, Forks, []) ->
       dsutils:log("STATE: THINKING -> LEAVING"),
       leaving(Neighbors, Forks, Pid, Ref)
   end;
+% Process the stored fork requests
 thinking(Neighbors, Forks, [C | Cs]) ->
   F = send_fork(C, Forks),
   thinking(Neighbors, F, Cs).
@@ -231,7 +234,7 @@ send_goodbye_messages([N | Ns]) ->
 have_all_forks(N, F) ->
   length(N) == length(F).
 
-% Sends a fork for Name to Pid.
+% Sends a fork to Name.
 % Returns a list of Forks with the sent fork removed.
 send_fork(Name, Forks) ->
   dsutils:log("Sending a fork to ~p.", [Name]),
