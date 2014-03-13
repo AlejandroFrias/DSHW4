@@ -1,3 +1,9 @@
+Team Members
+============
+Alejandro Frias
+Ravi Kumar
+
+
 DSHW4
 =====
 
@@ -22,4 +28,5 @@ a@amazonia
 b@arden
 c@ash
 
+Overall we didn't have too much trouble with the assignment. We first sat down and hashed out the algorithm, and didn't really run into any major issues while coding or testing it, as we thought it out quite extensively before we started coding. 
 

@@ -18,6 +18,7 @@
 % Starts up the philosopher and sets it to JOINING state initially
 main([Name | Neighbors]) ->
   try 
+    % Erlang networking boilerplate 
     _ = os:cmd("epmd -daemon"),
     net_kernel:start([list_to_atom(Name), shortnames]),
     register(philosopher, self()),
@@ -25,7 +26,7 @@ main([Name | Neighbors]) ->
     erlang:set_cookie(node(), 'philosopher'),
     dsutils:log("My node name is '~s'", [node()]),
     N = [list_to_atom(X) || X <- Neighbors],
-    joining(N) % initially joining
+    joining(N) % We begin in the joining state
   catch
     _:_ -> dsutils:log("Error parsing command line parameters.")
   end,
@@ -47,7 +48,7 @@ main([Name | Neighbors]) ->
 joining(N) ->
   send_join_requests(N),
   Neighbors = confirm_join(N, N),
-  dsutils:log("Becoming THINKING."),
+  dsutils:log("STATE: JOINING -> THINKING."),
   thinking(Neighbors, [{dirty, F} || F <- Neighbors], []).
 
 
@@ -66,19 +67,23 @@ thinking(Neighbors, Forks, []) ->
   receive
     {Name, fork_request} ->
       dsutils:log("Received fork request from ~p.", [Name]),
+      %As our algorithm is implemented, a node can never receive a request for a fork it doesn't have
       F = send_fork(Name, Forks),
       thinking(Neighbors, F, []);
+
     {Name, join_request} ->
       N = [Name | Neighbors],
       dsutils:log("Received Join Request from ~p. My neighbors are now ~p.", [Name, N]),
       dsutils:log("Sending Join Accept to ~p.", [Name]),
       {philosopher, Name} ! {node(), join_accept},
       thinking(N, Forks, []);
+
     {Name, goodbye} ->
       dsutils:log("Received goodbye notification from ~p.", [Name]),
       N = lists:delete(Name, Neighbors),
       F = lists:delete({dirty, Name}, Forks),
       thinking(N, F, []);
+
     {Pid, Ref, become_hungry} ->
       dsutils:log("Received command to become HUNGRY. Sending fork requests."),
       N = [X || X <- Neighbors, not(lists:member({dirty, X}, Forks))],
@@ -86,13 +91,17 @@ thinking(Neighbors, Forks, []) ->
       send_fork_requests(N),
       dsutils:log("STATE: THINKING -> HUNGRY"),
       hungry(Neighbors, Forks, [], Pid, Ref);
+
     {Pid, Ref, leave} ->
       dsutils:log("Received Leave command from external controller."),
       send_goodbye_messages(Neighbors),
       dsutils:log("STATE: THINKING -> LEAVING"),
       leaving(Neighbors, Forks, Pid, Ref)
   end;
+
 % Process the stored fork requests
+% If we get fork requests when hungry but have priority, we save them for later,
+% and deal with the requests here (which is only called when transitioning from EATING->THINKING)
 thinking(Neighbors, Forks, [C | Cs]) ->
   F = send_fork(C, Forks),
   thinking(Neighbors, F, Cs).
@@ -114,6 +123,7 @@ hungry(Neighbors, Forks, CleanForkRequests, ECPid, ECRef) ->
       F = [{dirty, X} || {_, X} <- Forks], % dirty all the forks
       dsutils:log("STATE: HUNGRY -> EATING"),
       eating(Neighbors, F, CleanForkRequests);
+
     false ->
       receive
         {Name, fork_request} ->
@@ -127,10 +137,12 @@ hungry(Neighbors, Forks, CleanForkRequests, ECPid, ECRef) ->
               C = [Name | CleanForkRequests],
               hungry(Neighbors, Forks, C, ECPid, ECRef)
           end;
+
         {Name, fork} ->
           dsutils:log("Received fork from ~p.", [Name]),
           F = [{clean, Name} | Forks],
           hungry(Neighbors, F, CleanForkRequests, ECPid, ECRef);
+
         {Name, goodbye} ->
           dsutils:log("Received goodbye notification from ~p.", [p]),
           N = lists:delete(Name, Neighbors),
@@ -138,6 +150,7 @@ hungry(Neighbors, Forks, CleanForkRequests, ECPid, ECRef) ->
           F = lists:delete({clean, Name}, lists:delete({dirty, Name}, Forks)), % deletes the clean or dirty fork
           dsutils:log("Forks left: ~p.", [F]),
           hungry(N, F, CleanForkRequests, ECPid, ECRef);
+
         {Pid, Ref, leave} ->
           dsutils:log("Received Leave command from external controller."),
           send_goodbye_messages(Neighbors),
@@ -158,6 +171,7 @@ eating(Neighbors, Forks, CleanForkRequests) ->
       dsutils:log("Received message from external controller to stop eating."),
       DirtyForks = [{dirty, F} || {_, F} <- Forks],
       dsutils:log("STATE: EATING -> THINKING"),
+      dsutils:log("Sending thinking notification to external controller"),
       Pid ! {Ref, thinking},
       thinking(Neighbors, DirtyForks, CleanForkRequests);
 
@@ -206,6 +220,7 @@ confirm_join(Neighbors, Waiting) ->
       dsutils:log("Received a Join Accept from ~p. Removed ~p from ~p.", [Name, Name, Waiting]),
       W = lists:delete(Name, Waiting),
       confirm_join(Neighbors, W);
+
     {Name, goodbye} ->
       dsutils:log("Received a Goodbye Message from ~p.", [Name]),
       W = lists:delete(Name, Waiting),
@@ -229,13 +244,13 @@ send_goodbye_messages([N | Ns]) ->
   {philosopher, N} ! {node(), goodbye},
   send_goodbye_messages(Ns).
 
-% TODO: Currently just comparing size of lists. Ideally we would check that
-% they match properly. Possibly not necessary
+%Check to see if we have all the forks. This just checks if the number of forks we need
+% is the same as the number of forks we have, as we will never have a fork we don't need while hungry.
 have_all_forks(N, F) ->
   length(N) == length(F).
 
 % Sends a fork to Name.
-% Returns a list of Forks with the sent fork removed.
+% Returns the list of Forks we have (with the sent fork removed).
 send_fork(Name, Forks) ->
   dsutils:log("Sending a fork to ~p.", [Name]),
   {philosopher, Name} ! {node(), fork},

@@ -194,18 +194,42 @@ with an acknowledgment. When P has acknowledgments from all of its
 neighbors, it moves from joining to thinking. Notably, when P 
 becomes thinking, none of its neighbors are currently eating. This 
 is because after a neighbor receives P's notification, it cannot eat 
-until P becomes thinking, at which point it will process fork 
-requests. Therefore, when all of P's neighbors have acknowledged P's 
+until P becomes thinking, at which point P will process fork 
+requests. Therefore, when all of P's neighbors have acknowledged its 
 join request, all of its neighbors are either thinking or 
 hungry.
 
 When P becomes thinking from joining, P creates a bunch of dirty 
 forks, one for each edge, giving all of its neighbors priority. 
 Since there are no outgoing edges from P, we maintain our acyclic 
-Priority graPh.
+priority graph.
 
 When a node P wants to leave the network, it sends a message to all 
 of its neighbors that it is leaving. When the neighbors receive this 
 message, they delete the relevant fork and all knowledge of that 
 neighbor. Since we are only deleting edges, this maintains our 
 acyclic priority graph.
+
+Since our original algorithm always maintains a priority graph, and all
+operations we added maintain the priority graph, all operations in our system
+maintain the acyclic priority graph. Thus, the proof of correctness of the
+hygenic solution also applies to our solution.
+
+--------------------------------------------------------------------------------
+                              Testing
+--------------------------------------------------------------------------------
+
+We tested our program extensively with up to four philosophers. We first tested
+the simple case of a single philosopher, that he can join the empty network,
+start eating, stop eating, and leave the network, and that he interfaces
+with the controller properly for all these state changes. We then tested
+having another philosopher join while the first was in various states to ensure
+that the second could only join while the first thinking. We then tested that
+the interactions of two philosophers worked, and that the fork was being shared
+properly and that either could leave without the other breaking. Finally we
+tested adding a third philosopher, and ensured that the transition from joining
+to thinking worked as we intended in various states of the other philosophers.
+Finally, we tested that all the philosophers interacted properly from a few
+different starting states, and that a philosopher leaving worked as intended
+on the remaining two. 
+
